@@ -1,0 +1,159 @@
+Golang gotchas
+
+Enric Lluelles
+
+@enriclluelles
+enric@lluell.es
+
+* Go is awesome
+
+- Easy to learn the basic semantics
+- You can get pretty far with advanced use of interfaces
+- Natively compiled, 100% static libraries
+- Fast compilation and execution
+- Easy to crosscompile since 1.5
+
+
+.image img/gopher.png
+
+* Go is a systems programming language
+
+Very well suited for
+
+- Servers
+- Daemons
+- CLI utilities
+
+But like any language it's not without its quirks
+
+* Range closures
+
+Closing over range vars in a goroutine
+
+.play code/range_var_closure.go /START OMIT/,/END OMIT/
+
+* Range closures
+
+.play code/range_var_closure_correct1.go /START OMIT/,/END OMIT/
+
+.play code/range_var_closure_correct2.go /START OMIT/,/END OMIT/
+
+* Always using standard errors
+
+.html code/custom_errors.html
+
+.code code/custom_errors_1.go /START STDERROR OMIT/,/END STDERROR OMIT/
+
+* Always using standard errors
+
+.code code/custom_errors_1.go /START STDERROR2 OMIT/,/END STDERROR2 OMIT/
+
+* Always using standard errors
+
+.code code/custom_errors_1.go /START RATE OMIT/,/END RATE OMIT/
+.code code/custom_errors_1.go /START PARSE OMIT/,/END PARSE OMIT/
+
+* Be too explicit when decoding json
+
+.html code/sample.html
+
+* Be too explicit when decoding json
+
+.play code/explicit_json.go /START EXPLICIT OMIT/,/END EXPLICIT OMIT/
+
+* Be too explicit when decoding json
+
+AIN'T NOBODY GOT TIME FOR THAT!
+
+.code code/explicit_json2.go /START EXPLICIT OMIT/,/END EXPLICIT OMIT/
+
+* Comparison and Interfaces
+
+.play code/Comparison_and_interfaces.go /START COMP OMIT/,/END COMP OMIT/
+
+.image img/gointer2.png
+
+* Comparison and Interfaces
+
+This means to never return a previously declared nil value as an error interface
+
+.code code/Comparison_and_interfaces2.go /START COMP OMIT/,/END COMP OMIT/
+
+* Comparison and Interfaces
+
+.play code/Comparison_and_interfaces2.go /START COMP2 OMIT/,/END COMP2 OMIT/
+
+* Comparison and Interfaces
+
+.play code/Comparison_and_interfaces3.go /START COMP2 OMIT/,/END COMP2 OMIT/
+
+* Resource draining OOM
+
+.code code/memory.go /START OOM2 OMIT/,/END OOM2 OMIT/
+
+.code code/memory.go /START OOM OMIT/,/END OOM OMIT/
+
+
+* Resource draining OOM
+
+Everything in go is garbage collected
+ ... except goroutines
+
+Finished goroutines' stack memory is kept allocated and reused by future goroutines
+
+Eventually, the scavenger routine gives the pages back to the os
+
+(`"runtime/debug".FreeOSMemory()` can force it)
+
+.link https://godoc.org/golang.org/x/net/netutil#LimitListener https://godoc.org/golang.org/x/net/netutil#LimitListener
+
+* Dependency management
+
+"Make your pacakge 'go get'-able"
+
+Go get is practical
+
+Go get is cool
+
+Go get is overrated
+
+.image img/popcorn.jpg
+
+* Dependency management
+
+Getting concrete versions of your packages has always been a mess in go
+
+Many tools flourished around this need: Godep, gom, gv, Glide
+
+Then came "GO15VENDOREXPERIMENT"
+
+.image img/vendor.jpg
+
+* Dependency management
+
+.html code/broken_vendor.html
+
+  cannot use b.Test() (type *"c/vendor/b/vendor/a".T) as type *"c/vendor/a".T in assignment
+
+Once go has downloaded the packages it doesn't know they're the same
+
+* Dependency management
+
+Real life example(actually 4 weeks old)
+
+.code code/route53.go
+
+* Dependency management
+
+Best solution I've found:
+
+  glide install --strip-vendor --strip-vcs
+
+Solution I'd like to see(but not hopeful about it):
+
+Google getting its shit together around this and deciding on a tool that:
+
+- Parses manifests
+- Builds dependency graph
+- Detects version conflicts between deps
+- Puts flat hierarcyhy in ./vendor
